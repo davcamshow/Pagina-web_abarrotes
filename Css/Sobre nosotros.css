@@ -1,0 +1,170 @@
+:root {
+    --primary: #2A6F97;      /* Azul principal */
+    --secondary: #468FAF;    /* Azul secundario */
+    --accent: #61A5C2;       /* Azul acento */
+    --light: #A9D6E5;        /* Azul claro */
+    --text-dark: #333333;    /* Texto oscuro */
+    --text-light: #F8F9FA;   /* Texto claro */
+    --background: #F5F7FA;   /* Fondo principal */
+    --white: #FFFFFF;        /* Blanco */
+    --shadow: rgba(0, 0, 0, 0.1);
+}
+
+/* Estilos generales */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+    background-color: var(--background);
+    color: var(--text-dark);
+    line-height: 1.6;
+    padding: 0;
+    margin: 0;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+/* Encabezado */
+header {
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    color: var(--text-light);
+    padding: 2rem 0;
+    text-align: center;
+    box-shadow: 0 4px 12px var(--shadow);
+    margin-bottom: 2rem;
+}
+
+h1 {
+    font-size: 2.8rem;
+    margin-bottom: 0.5rem;
+    font-weight: 700;
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+/* Secciones */
+section {
+    background-color: var(--white);
+    border-radius: 10px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 4px 15px var(--shadow);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+section:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+h2 {
+    color: var(--primary);
+    font-size: 1.8rem;
+    margin-bottom: 1.2rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid var(--light);
+    font-weight: 600;
+}
+
+h4 {
+    font-size: 1.1rem;
+    font-weight: 400;
+    margin-bottom: 1.5rem;
+    line-height: 1.7;
+    color: var(--text-dark);
+}
+
+/* Listas */
+ul {
+    list-style-type: none;
+    padding-left: 0;
+}
+
+li {
+    margin-bottom: 1.2rem;
+    padding-left: 1.5rem;
+    position: relative;
+    line-height: 1.6;
+}
+
+li:before {
+    content: "•";
+    color: var(--accent);
+    font-weight: bold;
+    position: absolute;
+    left: 0;
+    font-size: 1.2rem;
+}
+
+b {
+    color: var(--secondary);
+    font-weight: 600;
+}
+
+/* Enlaces */
+a {
+    color: var(--accent);
+    text-decoration: none;
+    transition: color 0.3s ease;
+    font-weight: 500;
+}
+
+a:hover {
+    color: var(--primary);
+    text-decoration: underline;
+}
+
+/* Sección de contacto */
+.contact-section {
+    background: linear-gradient(135deg, var(--secondary), var(--accent));
+    color: var(--text-light);
+}
+
+.contact-section h2 {
+    color: var(--text-light);
+    border-bottom: 2px solid var(--light);
+}
+
+.contact-section a {
+    color: var(--light);
+}
+
+.contact-section a:hover {
+    color: var(--white);
+}
+
+/* Pie de página */
+footer {
+    background-color: var(--primary);
+    color: var(--text-light);
+    text-align: center;
+    padding: 1.5rem 0;
+    margin-top: 2rem;
+    font-size: 0.9rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    h1 {
+        font-size: 2.2rem;
+    }
+    
+    h2 {
+        font-size: 1.6rem;
+    }
+    
+    section {
+        padding: 1.5rem;
+    }
+    
+    .container {
+        padding: 0 15px;
+    }
+}
