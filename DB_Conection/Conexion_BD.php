@@ -1,5 +1,5 @@
 
-<?php include "../Html/Sobre nosotros.html"; 
+<?php include "../Html/SobreNosotros.html"; 
 $servidor ="localhost";
 $usuario ="root";
 $clave ="";
