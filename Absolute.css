@@ -145,3 +145,22 @@ input:focus {
         font-size: 1.5rem;
     }
 }
+/* Agregar a las variables CSS */
+:root {
+    --error: #e74c3c;
+    --success: #2ecc71;
+    --warning: #f39c12;
+}
+
+/* Agregar estilos para mensajes de error */
+.error-message {
+    color: var(--error);
+    font-size: 0.8rem;
+    margin-top: 5px;
+}
+
+.success-message {
+    color: var(--success);
+    font-size: 0.8rem;
+    margin-top: 5px;
+}

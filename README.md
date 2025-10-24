@@ -1,2 +1,16 @@
-# Tienda-de-abarrotes-
-Hacemos tu despensa fácil y rápida. Compra abarrotes, frutas, verduras frescas, carnes, lácteos y artículos para el hogar desde tu celular. Olvida las filas. Ofrecemos calidad, precios bajos y entregas rápidas a tu puerta. ¡Tu tiempo es valioso, compra con nosotros!
+# Tienda de Abarrotes - Proyecto Web
+
+## Descripción
+Sistema web para tienda de abarrotes con funcionalidades de e-commerce.
+
+## Características
+- ✅ Diseño responsive
+- ✅ Validación de formularios
+- ✅ Elementos dinámicos con JavaScript
+- ✅ Base de datos MySQL
+- ✅ Autenticación de usuarios
+
+## Instalación
+1. Clonar el repositorio
+2. Configurar la base de datos (ver `Conexion_BD.php`)
+3. Abrir en servidor web local
