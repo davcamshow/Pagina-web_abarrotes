@@ -1,0 +1,215 @@
+<!-- administrar_usuarios.html -->
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Administrar Usuarios - Tienda de Abarrotes</title>
+    <link rel="stylesheet" href="{% static 'css/inicioUsuario.css' %}">
+    <link rel="stylesheet" href="{% static 'css/admin.css' %}">
+</head>
+<body>
+    <!-- Menú lateral -->
+    <nav class="sidebar">
+        <div class="sidebar-header">
+            <h2>Panel Administrativo</h2>
+            <p>Menú de Administración</p>
+        </div>
+        
+        <ul class="sidebar-menu">
+            <li class="menu-item">
+                <a href="{% url 'inicio_admin' %}" class="menu-link">
+                    <span class="menu-icon">🏠</span>
+                    Inicio Admin
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="{% url 'inventario' %}" class="menu-link">
+                    <span class="menu-icon">📦</span>
+                    Inventario
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="{% url 'administrar_usuarios' %}" class="menu-link active">
+                    <span class="menu-icon">👥</span>
+                    Administrar Usuarios
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="{% url 'inicio_usuario' %}" class="menu-link">
+                    <span class="menu-icon">🛒</span>
+                    Ir a Tienda
+                </a>
+            </li>
+        </ul>
+    </nav>
+
+    <!-- Contenido principal -->
+    <main class="main-content">
+        <!-- Barra de navegación superior -->
+        <nav class="top-nav">
+            <div class="nav-container">
+                <div class="search-bar">
+                    <input type="text" placeholder="Buscar usuarios..." class="search-input" id="searchUsers">
+                    <button class="search-btn" onclick="buscarUsuarios()">
+                        <span class="search-icon">🔍</span>
+                    </button>
+                </div>
+                <div class="user-actions">
+                    <div class="user-info">
+                        <span>Administrador: {{ usuario.nombre }}</span>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <div class="container">
+            <!-- Estadísticas -->
+            <section class="users-stats">
+                <div class="stat-card">
+                    <div class="stat-number">{{ total_usuarios }}</div>
+                    <div class="stat-label">Total Usuarios</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">{{ usuarios_activos }}</div>
+                    <div class="stat-label">Usuarios Activos</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">{{ administradores }}</div>
+                    <div class="stat-label">Administradores</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">{{ total_usuarios|add:"-usuarios_activos" }}</div>
+                    <div class="stat-label">Usuarios Inactivos</div>
+                </div>
+            </section>
+
+            <!-- Acciones principales -->
+            <section class="users-actions">
+                <button class="action-btn" onclick="mostrarModalCrear()">
+                    <span class="action-icon">➕</span>
+                    Agregar Usuario
+                </button>
+                
+                <div class="search-filter">
+                    <select class="filter-select" id="filterStatus" onchange="filtrarUsuarios()">
+                        <option value="all">Todos los estados</option>
+                        <option value="active">Solo activos</option>
+                        <option value="inactive">Solo inactivos</option>
+                    </select>
+                    
+                    <select class="filter-select" id="filterRole" onchange="filtrarUsuarios()">
+                        <option value="all">Todos los roles</option>
+                        <option value="admin">Solo administradores</option>
+                        <option value="user">Solo usuarios</option>
+                    </select>
+                </div>
+            </section>
+
+            <!-- Tabla de usuarios -->
+            <section class="users-table">
+                <div class="table-header">
+                    <div>ID</div>
+                    <div>Nombre</div>
+                    <div>Email</div>
+                    <div>Estado</div>
+                    <div>Rol</div>
+                    <div>Acciones</div>
+                </div>
+
+                {% for usuario in usuarios %}
+                <div class="table-row {% if not usuario.is_active %}user-inactive{% endif %}" data-user-id="{{ usuario.id }}">
+                    <div>#{{ usuario.id }}</div>
+                    <div>
+                        <div class="user-avatar">
+                            {{ usuario.nombre|first|upper }}
+                        </div>
+                        {{ usuario.nombre }}
+                    </div>
+                    <div>{{ usuario.email }}</div>
+                    <div>
+                        <span class="status-badge {% if usuario.is_active %}status-active{% else %}status-inactive{% endif %}">
+                            {% if usuario.is_active %}Activo{% else %}Inactivo{% endif %}
+                        </span>
+                    </div>
+                    <div>
+                        <span class="status-badge {% if usuario.is_admin %}status-active{% else %}status-inactive{% endif %}">
+                            {% if usuario.is_admin %}Administrador{% else %}Usuario{% endif %}
+                        </span>
+                    </div>
+                    <div class="action-buttons">
+                        <button class="btn-small btn-edit" onclick="editarUsuario({{ usuario.id }})">
+                            Editar
+                        </button>
+                        {% if usuario.is_active %}
+                            <button class="btn-small btn-deactivate" onclick="cambiarEstado({{ usuario.id }}, 'desactivar')">
+                                Desactivar
+                            </button>
+                        {% else %}
+                            <button class="btn-small btn-edit" onclick="cambiarEstado({{ usuario.id }}, 'activar')">
+                                Activar
+                            </button>
+                        {% endif %}
+                        {% if usuario.id != request.user.id %}
+                            <button class="btn-small btn-delete" onclick="eliminarUsuario({{ usuario.id }})">
+                                Eliminar
+                            </button>
+                        {% else %}
+                            <button class="btn-small" disabled title="No puedes eliminar tu propio usuario">
+                                Eliminar
+                            </button>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </section>
+        </div>
+    </main>
+
+    <!-- Modal para crear/editar usuario -->
+    <div id="userModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalTitle">Agregar Usuario</h3>
+                <span class="close" onclick="cerrarModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="userForm">
+                    <input type="hidden" id="usuarioId">
+                    
+                    <div class="form-group">
+                        <label for="nombre">Nombre completo</label>
+                        <input type="text" id="nombre" name="nombre" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="email">Email</label>
+                        <input type="email" id="email" name="email" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="password">Contraseña</label>
+                        <input type="password" id="password" name="password">
+                        <small id="passwordHelp">Dejar en blanco para mantener la contraseña actual (solo edición)</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="es_admin" name="es_admin">
+                            <span class="checkmark"></span>
+                            Es administrador
+                        </label>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-secondary" onclick="cerrarModal()">Cancelar</button>
+                <button type="button" class="btn-primary" onclick="guardarUsuario()">Guardar Usuario</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="{% static 'js/admin-users.js' %}"></script>
+</body>
+</html>

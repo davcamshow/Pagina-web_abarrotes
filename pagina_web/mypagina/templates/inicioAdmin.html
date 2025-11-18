@@ -1,0 +1,157 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Administración - Tienda de Abarrotes</title>
+    <link rel="stylesheet" href="{% static 'css/inicioUsuario.css' %}">
+    <link rel="stylesheet" href="{% static 'css/admin.css' %}">
+</head>
+<body>
+    <!-- Menú lateral -->
+    <nav class="sidebar">
+        <div class="sidebar-header">
+            <h2>Panel Administrativo</h2>
+            <p>Menú de Administración</p>
+        </div>
+        
+        <ul class="sidebar-menu">
+            <li class="menu-item">
+                <a href="{% url 'inicio_admin' %}" class="menu-link active">
+                    <span class="menu-icon">🏠</span>
+                    Inicio Admin
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="{% url 'inventario' %}" class="menu-link">
+                    <span class="menu-icon">📦</span>
+                    Inventario
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="{% url 'administrar_usuarios' %}" class="menu-link">
+                    <span class="menu-icon">👥</span>
+                    Administrar Usuarios
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="{% url 'inicio_usuario' %}" class="menu-link">
+                    <span class="menu-icon">🛒</span>
+                    Ir a Tienda
+                </a>
+            </li>
+        </ul>
+        
+        <div class="sidebar-footer">
+            <p>&copy; 2025 Tienda de Abarrotes</p>
+        </div>
+    </nav>
+
+    <!-- Contenido principal -->
+    <main class="main-content">
+        <!-- Barra de navegación superior -->
+        <nav class="top-nav">
+            <div class="nav-container">
+                <div class="search-bar">
+                    <input type="text" placeholder="Buscar en el sistema..." class="search-input">
+                    <button class="search-btn">
+                        <span class="search-icon">🔍</span>
+                    </button>
+                </div>
+                <div class="user-actions">
+                    <div class="user-info">
+                        <span>Administrador: {{ usuario.nombre }}</span>
+                    </div>
+                    <div class="nav-actions">
+                        <a href="#" class="nav-action">
+                            <span class="action-icon">⚙️</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Hero Section -->
+        <header class="hero">
+            <div class="container">
+                <h1>Panel de Administración</h1>
+                <p>Gestiona tu tienda de manera eficiente y profesional</p>
+            </div>
+        </header>
+
+        <div class="container">
+            <!-- Estadísticas rápidas -->
+            <section class="admin-stats">
+                <div class="stat-card">
+                    <div class="stat-number">{{ total_usuarios|default:"0" }}</div>
+                    <div class="stat-label">Usuarios Registrados</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">{{ total_productos|default:"0" }}</div>
+                    <div class="stat-label">Productos en Inventario</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number warning-stat">{{ productos_bajo_stock|default:"0" }}</div>
+                    <div class="stat-label">Productos con Stock Bajo</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number danger-stat">{{ productos_agotados|default:"0" }}</div>
+                    <div class="stat-label">Productos Agotados</div>
+                </div>
+            </section>
+
+            <!-- Acciones rápidas -->
+            <section class="admin-actions">
+                <div class="action-card" onclick="window.location.href='{% url 'inventario' %}'">
+                    <div class="action-icon">📦</div>
+                    <h3>Gestionar Inventario</h3>
+                    <p>Administra productos, stock, categorías y precios de tu tienda</p>
+                    <button class="action-btn">Ir al Inventario</button>
+                </div>
+                
+                <div class="action-card" onclick="window.location.href='{% url 'administrar_usuarios' %}'">
+                    <div class="action-icon">👥</div>
+                    <h3>Administrar Usuarios</h3>
+                    <p>Gestiona usuarios, permisos y actividades de los clientes</p>
+                    <button class="action-btn">Gestionar Usuarios</button>
+                </div>
+                
+                <div class="action-card" onclick="window.location.href='/admin/'">
+                    <div class="action-icon">⚙️</div>
+                    <h3>Admin Django</h3>
+                    <p>Acceso al panel de administración avanzado de Django</p>
+                    <button class="action-btn">Ir a Django Admin</button>
+                </div>
+                
+                <div class="action-card" onclick="window.location.href='{% url 'inicio_usuario' %}'">
+                    <div class="action-icon">🛒</div>
+                    <h3>Ver Tienda</h3>
+                    <p>Visualiza cómo ven los clientes tu tienda en línea</p>
+                    <button class="action-btn">Ver Tienda</button>
+                </div>
+            </section>
+
+            <!-- Información reciente -->
+            <section style="margin-top: 3rem;">
+                <h2 style="color: var(--primary); margin-bottom: 1.5rem; text-align: center;">Actividad Reciente</h2>
+                <div style="background: var(--white); padding: 2rem; border-radius: 15px; box-shadow: 0 4px 15px var(--shadow);">
+                    <div style="text-align: center; color: var(--text-dark);">
+                        <p style="font-size: 1.1rem; margin-bottom: 1rem;">📊 Aquí se mostrará la actividad reciente del sistema</p>
+                        <p style="opacity: 0.7;">Registros de ventas, usuarios nuevos, productos agregados, etc.</p>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <footer>
+            <div class="container">
+                <p>&copy; 2025 Tienda de Abarrotes. Todos los derechos reservados.</p>
+                <p>Panel de Administración | Versión 1.0</p>
+            </div>
+        </footer>
+    </main>
+
+    <script src="{% static 'js/admin.js' %}"></script>
+</body>
+</html>

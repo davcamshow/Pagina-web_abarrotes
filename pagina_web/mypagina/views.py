@@ -8,6 +8,7 @@ from django.views.decorators.csrf import csrf_exempt
 import json
 from .forms import RegistroForm, LoginForm
 from .models import Usuario, Categoria, Producto
+from django.contrib.admin.views.decorators import staff_member_required
 
 def home(request):
     return render(request, 'inicio.html')
@@ -42,6 +43,7 @@ def registro(request):
     
     return render(request, 'Registro.html', {'form': form})
 
+# views.py - Modificar la función login
 def login(request):
     if request.method == 'POST':
         if request.headers.get('x-requested-with') == 'XMLHttpRequest':
@@ -64,7 +66,13 @@ def login(request):
                 if usuario.check_password(password):
                     auth_login(request, usuario)
                     messages.success(request, f'¡Bienvenido {usuario.nombre}!')
-                    return redirect('inicio_usuario')
+                    
+                    # NUEVA LÓGICA: Redirigir según el tipo de usuario
+                    if usuario.is_admin:
+                        return redirect('inicio_admin')
+                    else:
+                        return redirect('inicio_usuario')
+                        
                 else:
                     messages.error(request, 'Contraseña incorrecta')
             except Usuario.DoesNotExist:
@@ -272,4 +280,219 @@ def obtener_carrito(request):
         return JsonResponse({
             'success': False,
             'message': f'Error al obtener carrito: {str(e)}'
+        })
+    
+# views.py - Modificar los decoradores
+from django.contrib.auth.decorators import user_passes_test
+
+def admin_required(function=None):
+    """
+    Decorador que verifica si el usuario es administrador
+    """
+    actual_decorator = user_passes_test(
+        lambda u: u.is_authenticated and u.is_admin,
+        login_url='/login/',
+        redirect_field_name=None
+    )
+    if function:
+        return actual_decorator(function)
+    return actual_decorator
+
+# Modificar las vistas administrativas
+@admin_required
+def inicio_admin(request):
+    """Vista para el panel de administración"""
+    # Obtener estadísticas
+    total_usuarios = Usuario.objects.count()
+    total_productos = Producto.objects.count()
+    productos_bajo_stock = Producto.objects.filter(stock__lt=10).count()
+    productos_agotados = Producto.objects.filter(stock=0).count()
+    
+    context = {
+        'usuario': request.user,
+        'total_usuarios': total_usuarios,
+        'total_productos': total_productos,
+        'productos_bajo_stock': productos_bajo_stock,
+        'productos_agotados': productos_agotados
+    }
+    
+    return render(request, 'inicioAdmin.html', context)
+
+@admin_required
+def inventario(request):
+    """Vista para gestionar el inventario"""
+    productos = Producto.objects.all().select_related('categoria')
+    categorias = Categoria.objects.all()
+    
+    # Estadísticas
+    total_productos = productos.count()
+    productos_bajo_stock = productos.filter(stock__lt=10).count()
+    productos_agotados = productos.filter(stock=0).count()
+    
+    context = {
+        'usuario': request.user,
+        'productos': productos,
+        'categorias': categorias,
+        'total_productos': total_productos,
+        'productos_bajo_stock': productos_bajo_stock,
+        'productos_agotados': productos_agotados
+    }
+    
+    return render(request, 'inventario.html', context)
+
+# views.py - Modifica la vista administrar_usuarios
+@staff_member_required
+def administrar_usuarios(request):
+    """Vista para administrar usuarios"""
+    usuarios = Usuario.objects.all()
+    
+    # Estadísticas
+    total_usuarios = usuarios.count()
+    usuarios_activos = usuarios.filter(is_active=True).count()
+    administradores = usuarios.filter(is_admin=True).count()
+    
+    context = {
+        'usuario': request.user,
+        'usuarios': usuarios,
+        'total_usuarios': total_usuarios,
+        'usuarios_activos': usuarios_activos,
+        'administradores': administradores
+    }
+    
+    return render(request, 'administrar_usuarios.html', context)
+
+# Agrega estas nuevas vistas para las acciones
+@staff_member_required
+@require_POST
+def crear_usuario(request):
+    """Crear nuevo usuario desde el panel admin"""
+    try:
+        nombre = request.POST.get('nombre')
+        email = request.POST.get('email')
+        password = request.POST.get('password')
+        es_admin = request.POST.get('es_admin') == 'true'
+        
+        if not nombre or not email or not password:
+            return JsonResponse({
+                'success': False,
+                'message': 'Todos los campos son obligatorios'
+            })
+        
+        if Usuario.objects.filter(email=email).exists():
+            return JsonResponse({
+                'success': False,
+                'message': 'Este email ya está registrado'
+            })
+        
+        usuario = Usuario(
+            nombre=nombre,
+            email=email,
+            is_admin=es_admin,
+            is_staff=es_admin
+        )
+        usuario.set_password(password)
+        usuario.save()
+        
+        return JsonResponse({
+            'success': True,
+            'message': f'Usuario {nombre} creado exitosamente'
+        })
+        
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': f'Error al crear usuario: {str(e)}'
+        })
+
+@staff_member_required
+@require_POST
+def editar_usuario(request):
+    """Editar usuario existente"""
+    try:
+        usuario_id = request.POST.get('usuario_id')
+        nombre = request.POST.get('nombre')
+        email = request.POST.get('email')
+        es_admin = request.POST.get('es_admin') == 'true'
+        
+        usuario = get_object_or_404(Usuario, id=usuario_id)
+        
+        # Verificar si el email ya existe en otro usuario
+        if Usuario.objects.filter(email=email).exclude(id=usuario_id).exists():
+            return JsonResponse({
+                'success': False,
+                'message': 'Este email ya está en uso por otro usuario'
+            })
+        
+        usuario.nombre = nombre
+        usuario.email = email
+        usuario.is_admin = es_admin
+        usuario.is_staff = es_admin
+        usuario.save()
+        
+        return JsonResponse({
+            'success': True,
+            'message': f'Usuario {nombre} actualizado exitosamente'
+        })
+        
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': f'Error al editar usuario: {str(e)}'
+        })
+
+@staff_member_required
+@require_POST
+def cambiar_estado_usuario(request):
+    """Activar/desactivar usuario"""
+    try:
+        usuario_id = request.POST.get('usuario_id')
+        accion = request.POST.get('accion')  # 'activar' o 'desactivar'
+        
+        usuario = get_object_or_404(Usuario, id=usuario_id)
+        
+        if accion == 'activar':
+            usuario.activar()
+            mensaje = f'Usuario {usuario.nombre} activado'
+        else:
+            usuario.desactivar()
+            mensaje = f'Usuario {usuario.nombre} desactivado'
+        
+        return JsonResponse({
+            'success': True,
+            'message': mensaje
+        })
+        
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': f'Error al cambiar estado: {str(e)}'
+        })
+
+@staff_member_required
+@require_POST
+def eliminar_usuario(request):
+    """Eliminar usuario permanentemente"""
+    try:
+        usuario_id = request.POST.get('usuario_id')
+        usuario = get_object_or_404(Usuario, id=usuario_id)
+        
+        # No permitir eliminar al propio usuario
+        if usuario.id == request.user.id:
+            return JsonResponse({
+                'success': False,
+                'message': 'No puedes eliminar tu propio usuario'
+            })
+        
+        nombre_usuario = usuario.nombre
+        usuario.delete()
+        
+        return JsonResponse({
+            'success': True,
+            'message': f'Usuario {nombre_usuario} eliminado permanentemente'
+        })
+        
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': f'Error al eliminar usuario: {str(e)}'
         })

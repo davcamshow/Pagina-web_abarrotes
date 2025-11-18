@@ -17,14 +17,41 @@ class UsuarioManager(BaseUserManager):
         usuario.save(using=self._db)
         return usuario
 
+# models.py - Modificar la clase Usuario
 class Usuario(AbstractBaseUser):
+    def activar(self):
+        """Activar usuario"""
+        self.is_active = True
+        self.save()
+    
+    def desactivar(self):
+        """Desactivar usuario"""
+        self.is_active = False
+        self.save()
+    
+    def convertir_en_admin(self):
+        """Convertir usuario en administrador"""
+        self.is_admin = True
+        self.is_staff = True
+        self.save()
+    
+    def remover_admin(self):
+        """Remover permisos de administrador"""
+        self.is_admin = False
+        self.is_staff = False
+        self.save()
+        
     id = models.AutoField(primary_key=True)
     nombre = models.CharField(max_length=100)
     email = models.EmailField(unique=True, max_length=254)
     password = models.CharField(max_length=128)
     last_login = models.DateTimeField(null=True, blank=True)
     is_active = models.BooleanField(default=True)
-    carrito = models.TextField(default='[]')  # Campo para almacenar el carrito como JSON
+    carrito = models.TextField(default='[]')
+    
+    # NUEVO CAMPO: identificar administradores
+    is_staff = models.BooleanField(default=False)
+    is_admin = models.BooleanField(default=False)
     
     objects = UsuarioManager()
     
@@ -45,15 +72,18 @@ class Usuario(AbstractBaseUser):
         return check_password(raw_password, self.password)
 
     def has_perm(self, perm, obj=None):
-        return True
+        # Los administradores tienen todos los permisos
+        return self.is_admin
 
     def has_module_perms(self, app_label):
-        return True
+        # Los administradores tienen acceso a todos los módulos
+        return self.is_admin
 
+    # MODIFICAR esta propiedad
     @property
     def is_staff(self):
-        return False
-
+        return self.is_admin
+    
     def obtener_carrito(self):
         """Obtiene el carrito del usuario como lista"""
         try:

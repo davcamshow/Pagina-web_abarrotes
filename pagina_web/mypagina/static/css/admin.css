@@ -1,0 +1,431 @@
+/* Estilos adicionales para el panel de administración */
+.admin-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.stat-card {
+    background: var(--white);
+    padding: 1.5rem;
+    border-radius: 15px;
+    box-shadow: 0 4px 15px var(--shadow);
+    text-align: center;
+    transition: transform 0.3s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+}
+
+.stat-number {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--primary);
+    margin-bottom: 0.5rem;
+}
+
+.stat-label {
+    color: var(--text-dark);
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.admin-actions {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+}
+
+.action-card {
+    background: var(--white);
+    padding: 2rem;
+    border-radius: 15px;
+    box-shadow: 0 4px 15px var(--shadow);
+    text-align: center;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    border: 2px solid transparent;
+}
+
+.action-card:hover {
+    transform: translateY(-5px);
+    border-color: var(--accent);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.action-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+}
+
+.action-card h3 {
+    color: var(--primary);
+    margin-bottom: 1rem;
+    font-size: 1.5rem;
+}
+
+.action-card p {
+    color: var(--text-dark);
+    margin-bottom: 1.5rem;
+    line-height: 1.6;
+}
+
+.action-btn {
+    background: var(--accent);
+    color: var(--white);
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 25px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.action-btn:hover {
+    background: var(--secondary);
+    color: var(--white);
+}
+
+.warning-stat {
+    color: var(--warning) !important;
+}
+
+.danger-stat {
+    color: var(--error) !important;
+}
+
+/* Estilos para el inventario */
+.inventory-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.inventory-table {
+    background: var(--white);
+    border-radius: 15px;
+    box-shadow: 0 4px 15px var(--shadow);
+    overflow: hidden;
+    margin-bottom: 2rem;
+}
+
+.table-header {
+    background: var(--primary);
+    color: var(--white);
+    padding: 1.5rem;
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr 1fr 1fr;
+    gap: 1rem;
+    font-weight: 600;
+}
+
+.table-row {
+    padding: 1rem 1.5rem;
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr 1fr 1fr;
+    gap: 1rem;
+    align-items: center;
+    border-bottom: 1px solid var(--light);
+    transition: background-color 0.3s ease;
+}
+
+.table-row:hover {
+    background: var(--background);
+}
+
+.table-row:last-child {
+    border-bottom: none;
+}
+
+.stock-low {
+    background: #fff3cd;
+}
+
+.stock-out {
+    background: #f8d7da;
+}
+
+.stock-badge {
+    padding: 0.25rem 0.5rem;
+    border-radius: 10px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.stock-good {
+    background: var(--success);
+    color: white;
+}
+
+.stock-warning {
+    background: var(--warning);
+    color: white;
+}
+
+.stock-danger {
+    background: var(--error);
+    color: white;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.btn-small {
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn-edit {
+    background: var(--accent);
+    color: white;
+}
+
+.btn-edit:hover {
+    background: var(--secondary);
+}
+
+.btn-delete {
+    background: var(--error);
+    color: white;
+}
+
+.btn-delete:hover {
+    background: #c82333;
+}
+
+.inventory-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.search-filter {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+.filter-select {
+    padding: 0.75rem;
+    border: 2px solid var(--light);
+    border-radius: 8px;
+    background: var(--white);
+}
+
+/* Estilos para administrar usuarios */
+.users-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.users-table {
+    background: var(--white);
+    border-radius: 15px;
+    box-shadow: 0 4px 15px var(--shadow);
+    overflow: hidden;
+    margin-bottom: 2rem;
+}
+
+.users-table .table-header {
+    grid-template-columns: 1fr 2fr 1fr 1fr 1fr;
+}
+
+.users-table .table-row {
+    grid-template-columns: 1fr 2fr 1fr 1fr 1fr;
+}
+
+.user-inactive {
+    background: #f8f9fa;
+    opacity: 0.7;
+}
+
+.status-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 15px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.status-active {
+    background: var(--success);
+    color: white;
+}
+
+.status-inactive {
+    background: var(--error);
+    color: white;
+}
+
+.btn-deactivate {
+    background: var(--warning);
+    color: white;
+}
+
+.btn-deactivate:hover {
+    background: #e0a800;
+}
+
+.users-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.user-avatar {
+    width: 40px;
+    height: 40px;
+    background: var(--accent);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 600;
+    font-size: 1rem;
+}
+/* Agrega esto al admin.css */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    background: var(--white);
+    padding: 2rem;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    max-width: 500px;
+    width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid var(--light);
+}
+
+.modal-header h3 {
+    color: var(--primary);
+    margin: 0;
+}
+
+.close {
+    font-size: 2rem;
+    cursor: pointer;
+    color: var(--text-dark);
+}
+
+.close:hover {
+    color: var(--error);
+}
+
+.modal-body {
+    margin-bottom: 2rem;
+}
+
+.modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: var(--text-dark);
+}
+
+.form-group input[type="text"],
+.form-group input[type="email"],
+.form-group input[type="password"] {
+    width: 100%;
+    padding: 0.75rem;
+    border: 2px solid var(--light);
+    border-radius: 8px;
+    font-size: 1rem;
+}
+
+.form-group input:focus {
+    border-color: var(--accent);
+    outline: none;
+}
+
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+}
+
+.checkbox-label input {
+    margin-right: 0.5rem;
+}
+
+.btn-primary {
+    background: var(--accent);
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.btn-primary:hover {
+    background: var(--secondary);
+}
+
+.btn-secondary {
+    background: var(--light);
+    color: var(--text-dark);
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.btn-secondary:hover {
+    background: #e9ecef;
+}
+
+small {
+    color: var(--text-light);
+    font-size: 0.8rem;
+}

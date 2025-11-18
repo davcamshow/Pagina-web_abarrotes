@@ -15,4 +15,14 @@ urlpatterns = [
     path('api/eliminar-carrito/', views.eliminar_del_carrito, name='eliminar_carrito'),
     path('api/vaciar-carrito/', views.vaciar_carrito, name='vaciar_carrito'),
     path('api/obtener-carrito/', views.obtener_carrito, name='obtener_carrito'),
+
+        # Panel de administración
+    path('inicioAdmin/', views.inicio_admin, name="inicio_admin"),
+    path('inventario/', views.inventario, name="inventario"),
+    path('administrar-usuarios/', views.administrar_usuarios, name="administrar_usuarios"),
+
+    path('api/crear-usuario/', views.crear_usuario, name='crear_usuario'),
+    path('api/editar-usuario/', views.editar_usuario, name='editar_usuario'),
+    path('api/cambiar-estado-usuario/', views.cambiar_estado_usuario, name='cambiar_estado_usuario'),
+    path('api/eliminar-usuario/', views.eliminar_usuario, name='eliminar_usuario'),
 ]

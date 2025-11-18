@@ -1,0 +1,186 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Inventario - Tienda de Abarrotes</title>
+    <link rel="stylesheet" href="{% static 'css/inicioUsuario.css' %}">
+    <link rel="stylesheet" href="{% static 'css/admin.css' %}">
+</head>
+<body>
+    <!-- Menú lateral -->
+    <nav class="sidebar">
+        <div class="sidebar-header">
+            <h2>Panel Administrativo</h2>
+            <p>Menú de Administración</p>
+        </div>
+        
+        <ul class="sidebar-menu">
+            <li class="menu-item">
+                <a href="{% url 'inicio_admin' %}" class="menu-link">
+                    <span class="menu-icon">🏠</span>
+                    Inicio Admin
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="{% url 'inventario' %}" class="menu-link active">
+                    <span class="menu-icon">📦</span>
+                    Inventario
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="{% url 'administrar_usuarios' %}" class="menu-link">
+                    <span class="menu-icon">👥</span>
+                    Administrar Usuarios
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="{% url 'inicio_usuario' %}" class="menu-link">
+                    <span class="menu-icon">🛒</span>
+                    Ir a Tienda
+                </a>
+            </li>
+        </ul>
+        
+        <div class="sidebar-footer">
+            <p>&copy; 2025 Tienda de Abarrotes</p>
+        </div>
+    </nav>
+
+    <!-- Contenido principal -->
+    <main class="main-content">
+        <!-- Barra de navegación superior -->
+        <nav class="top-nav">
+            <div class="nav-container">
+                <div class="search-bar">
+                    <input type="text" placeholder="Buscar productos..." class="search-input" id="search-inventory">
+                    <button class="search-btn">
+                        <span class="search-icon">🔍</span>
+                    </button>
+                </div>
+                <div class="user-actions">
+                    <div class="user-info">
+                        <span>Administrador: {{ usuario.nombre }}</span>
+                    </div>
+                    <div class="nav-actions">
+                        <a href="#" class="nav-action">
+                            <span class="action-icon">⚙️</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Hero Section -->
+        <header class="hero">
+            <div class="container">
+                <h1>📦 Gestión de Inventario</h1>
+                <p>Administra y controla el stock de tus productos</p>
+            </div>
+        </header>
+
+        <div class="container">
+            <!-- Estadísticas del inventario -->
+            <section class="inventory-stats">
+                <div class="stat-card">
+                    <div class="stat-number">{{ total_productos }}</div>
+                    <div class="stat-label">Total Productos</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">{{ productos_bajo_stock }}</div>
+                    <div class="stat-label">Stock Bajo (<10)</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number danger-stat">{{ productos_agotados }}</div>
+                    <div class="stat-label">Agotados</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">8</div>
+                    <div class="stat-label">Categorías</div>
+                </div>
+            </section>
+
+            <!-- Acciones del inventario -->
+            <section class="inventory-actions">
+                <div class="search-filter">
+                    <select class="filter-select" id="category-filter">
+                        <option value="">Todas las categorías</option>
+                        {% for categoria in categorias %}
+                        <option value="{{ categoria.id }}">{{ categoria.nombre }}</option>
+                        {% endfor %}
+                    </select>
+                    <select class="filter-select" id="stock-filter">
+                        <option value="">Todo el stock</option>
+                        <option value="low">Stock Bajo</option>
+                        <option value="out">Agotados</option>
+                        <option value="good">Stock Bueno</option>
+                    </select>
+                </div>
+                <button class="action-btn" id="btn-agregar-producto">
+                    <span class="btn-icon">➕</span>
+                    Agregar Producto
+                </button>
+            </section>
+
+            <!-- Tabla de productos -->
+            <section class="inventory-table">
+                <div class="table-header">
+                    <span>Producto</span>
+                    <span>Categoría</span>
+                    <span>Precio</span>
+                    <span>Stock</span>
+                    <span>Estado</span>
+                    <span>Acciones</span>
+                </div>
+                
+                {% for producto in productos %}
+                <div class="table-row {% if producto.stock == 0 %}stock-out{% elif producto.stock < 10 %}stock-low{% endif %}" data-product-id="{{ producto.id_producto }}">
+                    <span>
+                        <strong>{{ producto.nombre }}</strong>
+                        {% if producto.destacado %}
+                        <span style="color: var(--warning); margin-left: 0.5rem;">★</span>
+                        {% endif %}
+                    </span>
+                    <span>{{ producto.categoria.nombre }}</span>
+                    <span>${{ producto.precio }}</span>
+                    <span>{{ producto.stock }}</span>
+                    <span>
+                        {% if producto.stock == 0 %}
+                        <span class="stock-badge stock-danger">Agotado</span>
+                        {% elif producto.stock < 10 %}
+                        <span class="stock-badge stock-warning">Bajo</span>
+                        {% else %}
+                        <span class="stock-badge stock-good">Disponible</span>
+                        {% endif %}
+                    </span>
+                    <span class="action-buttons">
+                        <button class="btn-small btn-edit" data-action="edit">
+                            Editar
+                        </button>
+                        <button class="btn-small btn-delete" data-action="delete">
+                            Eliminar
+                        </button>
+                    </span>
+                </div>
+                {% empty %}
+                <div class="table-row" style="text-align: center; padding: 2rem;">
+                    <span style="grid-column: 1 / -1; color: var(--text-dark);">
+                        No hay productos en el inventario
+                    </span>
+                </div>
+                {% endfor %}
+            </section>
+        </div>
+
+        <footer>
+            <div class="container">
+                <p>&copy; 2025 Tienda de Abarrotes. Todos los derechos reservados.</p>
+                <p>Gestión de Inventario | Total: {{ total_productos }} productos</p>
+            </div>
+        </footer>
+    </main>
+
+    <script src="{% static 'js/inventario.js' %}"></script>
+</body>
+</html>
