@@ -164,3 +164,86 @@ input:focus {
     font-size: 0.8rem;
     margin-top: 5px;
 }
+/* Estilos para el indicador de fortaleza de contraseña */
+.password-strength {
+    margin-top: 10px;
+    padding: 15px;
+    background: var(--background);
+    border-radius: 8px;
+    border: 1px solid var(--light);
+}
+
+.strength-title {
+    font-weight: 600;
+    color: var(--text-dark);
+    margin-bottom: 10px;
+    font-size: 0.9rem;
+}
+
+.strength-checks {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.strength-check {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.8rem;
+    color: var(--text-dark);
+    transition: all 0.3s ease;
+}
+
+.check-icon {
+    font-weight: bold;
+    width: 16px;
+    text-align: center;
+}
+
+.strength-check.valid {
+    color: var(--success);
+}
+
+/* Estilos para modales */
+.custom-modal {
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.modal-content {
+    animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+    from { 
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to { 
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Mejoras para mensajes de error */
+.error-message {
+    color: var(--error);
+    font-size: 0.8rem;
+    margin-top: 5px;
+    display: block;
+}
+
+/* Estilos para inputs con error */
+input:invalid {
+    border-color: var(--error);
+}
+
+/* Estilos para inputs válidos */
+input:valid {
+    border-color: var(--success);
+}

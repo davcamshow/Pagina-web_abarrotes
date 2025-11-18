@@ -1,0 +1,282 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inicio - Tienda de Abarrotes</title>
+    <link rel="stylesheet" href="{% static 'css/inicioUsuario.css' %}">
+</head>
+<body>
+    <!-- Menú lateral -->
+    <nav class="sidebar">
+        <div class="sidebar-header">
+            <h2>Tienda de Abarrotes</h2>
+            <p>Menú de Navegación</p>
+        </div>
+        
+        <ul class="sidebar-menu">
+            <li class="menu-item">
+                <a href="{% url 'inicio_usuario' %}" class="menu-link {% if not categoria_seleccionada %}active{% endif %}">
+                    <span class="menu-icon">🏠</span>
+                    Inicio
+                </a>
+            </li>
+            <li class="menu-item">
+    <a href="{% url 'carrito' %}" class="menu-link">
+        <span class="menu-icon">🛒</span>
+        Carrito
+        <span class="cart-badge">0</span>
+    </a>
+</li>
+        </ul>
+        
+        <div class="sidebar-footer">
+            <p>&copy; 2025 Tienda de Abarrotes</p>
+        </div>
+    </nav>
+
+    <!-- Contenido principal -->
+    <main class="main-content">
+        <!-- Barra de navegación superior -->
+        <nav class="top-nav">
+            <div class="nav-container">
+                <div class="search-bar">
+                    <input type="text" placeholder="Buscar productos..." class="search-input">
+                    <button class="search-btn">
+                        <span class="search-icon">🔍</span>
+                    </button>
+                </div>
+                <div class="user-actions">
+                    <div class="user-info">
+                        <span>Bienvenido, {{ usuario.nombre }}</span>
+                    </div>
+                    <div class="nav-actions">
+                        <a href="#" class="nav-action">
+                            <span class="action-icon">⚙️</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Hero Section -->
+        <header class="hero">
+            <div class="container">
+                <h1>Bienvenido a tu Tienda de Abarrotes</h1>
+                <p>Todo lo que necesitas para tu hogar, con la mejor calidad y precio</p>
+            </div>
+        </header>
+
+        <div class="container">
+            <!-- Categorías desde la base de datos -->
+            {% if not categoria_seleccionada %}
+            <section class="categories">
+                <h2>Nuestras Categorías</h2>
+                <div class="categories-grid">
+                    {% for categoria in categorias %}
+                    <div class="category-card" onclick="seleccionarCategoria({{ categoria.id }})" style="cursor: pointer;">
+                        <div class="category-icon">
+                            {% if "fruta" in categoria.nombre.lower %}🍎
+                            {% elif "verdura" in categoria.nombre.lower %}🥦
+                            {% elif "carne" in categoria.nombre.lower %}🥩
+                            {% elif "lácteo" in categoria.nombre.lower or "leche" in categoria.nombre.lower %}🥛
+                            {% elif "grano" in categoria.nombre.lower or "arroz" in categoria.nombre.lower or "frijol" in categoria.nombre.lower %}🍚
+                            {% elif "limpieza" in categoria.nombre.lower %}🧴
+                            {% elif "bebida" in categoria.nombre.lower %}🧃
+                            {% elif "pan" in categoria.nombre.lower %}🍞
+                            {% elif "conserva" in categoria.nombre.lower %}🥫
+                            {% else %}📦
+                            {% endif %}
+                        </div>
+                        <h3>{{ categoria.nombre }}</h3>
+                        <p>{{ categoria.descripcion|default:"Productos de calidad" }}</p>
+                    </div>
+                    {% empty %}
+                    <div class="no-categories">
+                        <p>No hay categorías disponibles en este momento.</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </section>
+            {% endif %}
+
+            <!-- Productos de la categoría seleccionada -->
+            {% if categoria_seleccionada %}
+            <section class="category-products">
+                <div class="category-header">
+                    <h2>Productos de: {{ categoria_seleccionada.nombre }}</h2>
+                    <button class="back-to-categories" onclick="volverACategorias()">← Volver a categorías</button>
+                </div>
+                
+                {% if productos %}
+                <div class="products-grid">
+                    {% for producto in productos %}
+                    <div class="product-card">
+                        <div class="product-image">
+                            {% if producto.imagen %}
+                                <img src="{{ producto.imagen }}" alt="{{ producto.nombre }}" style="width: 100px; height: 100px; object-fit: cover; border-radius: 10px;">
+                            {% else %}
+                                {% if "fruta" in categoria_seleccionada.nombre.lower %}🍎
+                                {% elif "verdura" in categoria_seleccionada.nombre.lower %}🥦
+                                {% elif "carne" in categoria_seleccionada.nombre.lower %}🥩
+                                {% elif "lácteo" in categoria_seleccionada.nombre.lower %}🥛
+                                {% elif "grano" in categoria_seleccionada.nombre.lower %}🍚
+                                {% elif "limpieza" in categoria_seleccionada.nombre.lower %}🧴
+                                {% elif "bebida" in categoria_seleccionada.nombre.lower %}🧃
+                                {% elif "pan" in categoria_seleccionada.nombre.lower %}🍞
+                                {% elif "conserva" in categoria_seleccionada.nombre.lower %}🥫
+                                {% else %}📦
+                                {% endif %}
+                            {% endif %}
+                        </div>
+                        <h3>{{ producto.nombre }}</h3>
+                        <p>{{ producto.description|default:"Producto de calidad"|truncatewords:10 }}</p>
+                        
+                        <div class="price-section">
+                            {% if producto.tiene_descuento %}
+                                <span class="original-price">${{ producto.precio_original|default:producto.precio }}</span>
+                                <span class="discount-price">${{ producto.precio }}</span>
+                                <span class="discount-badge">-{{ producto.descuento }}%</span>
+                            {% else %}
+                                <span class="price">${{ producto.precio }}</span>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="product-stock">
+                            {% if producto.stock > 0 %}
+                                <span class="in-stock">En stock: {{ producto.stock }}</span>
+                            {% else %}
+                                <span class="out-of-stock">Agotado</span>
+                            {% endif %}
+                        </div>
+                        <button class="add-to-cart" 
+                                {% if producto.stock <= 0 %}disabled{% endif %}
+                                data-product-id="{{ producto.id_producto }}"
+                                data-product-name="{{ producto.nombre }}"
+                                data-product-price="{{ producto.precio }}">
+                            {% if producto.stock > 0 %}
+                                Agregar al Carrito
+                            {% else %}
+                                Sin Stock
+                            {% endif %}
+                        </button>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="no-products">
+                    <p>No hay productos disponibles en esta categoría.</p>
+                </div>
+                {% endif %}
+            </section>
+            {% endif %}
+            
+        </div>
+
+        <footer>
+            <div class="container">
+                <p>&copy; 2025 Tienda de Abarrotes. Todos los derechos reservados.</p>
+                <p>Contacto: <a href="mailto:ejemplo@gmail.com">ejemplo@gmail.com</a> | Teléfono: <a href="tel:+2222222222">(222)-222-2222</a></p>
+            </div>
+        </footer>
+    </main>
+
+   <script>
+    // Función para seleccionar categoría
+    function seleccionarCategoria(categoriaId) {
+        window.location.href = `{% url 'inicio_usuario' %}?categoria_id=${categoriaId}`;
+    }
+
+    // Función para volver a categorías
+    function volverACategorias() {
+        window.location.href = "{% url 'inicio_usuario' %}";
+    }
+
+    // Add to cart functionality
+    document.addEventListener('DOMContentLoaded', function() {
+        // Cargar el carrito actual
+        cargarCarritoActual();
+        
+        document.querySelectorAll('.add-to-cart').forEach(button => {
+            button.addEventListener('click', function() {
+                if (!this.disabled) {
+                    const productId = this.getAttribute('data-product-id');
+                    const productName = this.getAttribute('data-product-name');
+                    
+                    agregarAlCarrito(productId, productName);
+                }
+            });
+        });
+    });
+
+    // Función para agregar producto al carrito
+    function agregarAlCarrito(productId, productName) {
+        fetch("{% url 'agregar_carrito' %}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: `producto_id=${productId}&cantidad=1`
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert(data.message);
+                actualizarBadgeCarrito(data.total_items);
+            } else {
+                alert(data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error al agregar al carrito');
+        });
+    }
+
+    // Función para cargar el carrito actual
+    function cargarCarritoActual() {
+        fetch("{% url 'obtener_carrito' %}")
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                actualizarBadgeCarrito(data.total_items);
+            }
+        })
+        .catch(error => {
+            console.error('Error al cargar carrito:', error);
+        });
+    }
+
+    // Función para actualizar el badge del carrito
+    function actualizarBadgeCarrito(totalItems) {
+        const badges = document.querySelectorAll('.cart-badge');
+        badges.forEach(badge => {
+            if (totalItems > 0) {
+                badge.textContent = totalItems > 9 ? '9+' : totalItems;
+                badge.style.display = 'inline-block';
+            } else {
+                badge.style.display = 'none';
+            }
+        });
+    }
+
+    // Función para obtener el token CSRF
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+</script>
+</body>
+</html>

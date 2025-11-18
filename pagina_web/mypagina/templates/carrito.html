@@ -1,0 +1,479 @@
+{% load static %}
+{% load custom_filters %}  <!-- ¡IMPORTANTE! Cargar los filtros personalizados -->
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carrito de Compras - Tienda de Abarrotes</title>
+    <link rel="stylesheet" href="{% static 'css/inicioUsuario.css' %}">
+    <link rel="stylesheet" href="{% static 'css/carrito.css' %}">
+</head>
+<body>
+    <!-- Menú lateral -->
+    <nav class="sidebar">
+        <div class="sidebar-header">
+            <h2>Tienda de Abarrotes</h2>
+            <p>Menú de Navegación</p>
+        </div>
+        
+        <ul class="sidebar-menu">
+            <li class="menu-item">
+                <a href="{% url 'inicio_usuario' %}" class="menu-link">
+                    <span class="menu-icon">🏠</span>
+                    Inicio
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="{% url 'carrito' %}" class="menu-link active">
+                    <span class="menu-icon">🛒</span>
+                    Carrito
+                    <span class="cart-badge" id="sidebar-cart-badge">
+                        {% if total_items > 0 %}{{ total_items }}{% endif %}
+                    </span>
+                </a>
+            </li>
+        </ul>
+        
+        <div class="sidebar-footer">
+            <p>&copy; 2025 Tienda de Abarrotes</p>
+        </div>
+    </nav>
+
+    <!-- Contenido principal -->
+    <main class="main-content">
+        <!-- Barra de navegación superior -->
+        <nav class="top-nav">
+            <div class="nav-container">
+                <div class="search-bar">
+                    <input type="text" placeholder="Buscar productos..." class="search-input" id="search-input">
+                    <button class="search-btn" onclick="buscarProductos()">
+                        <span class="search-icon">🔍</span>
+                    </button>
+                </div>
+                <div class="user-actions">
+                    <div class="user-info">
+                        <span>Bienvenido, {{ usuario.nombre }}</span>
+                    </div>
+                    <div class="nav-actions">
+                        <a href="#" class="nav-action">
+                            <span class="action-icon">⚙️</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Hero Section para Carrito -->
+        <header class="hero">
+            <div class="container">
+                <h1>🛒 Tu Carrito de Compras</h1>
+                <p>Revisa y gestiona los productos que has seleccionado para tu pedido</p>
+            </div>
+        </header>
+
+        <div class="container">
+            <div class="cart-layout">
+                <!-- Lista de productos en el carrito -->
+                <div class="cart-items-section">
+                    <div class="section-header">
+                        <h2>Productos Seleccionados</h2>
+                        <span class="items-count" id="items-count">
+                            {% if total_items == 0 %}
+                                0 productos
+                            {% else %}
+                                {{ total_items }} producto{{ total_items|pluralize }}
+                            {% endif %}
+                        </span>
+                    </div>
+
+                    <div class="cart-items" id="cart-items">
+        {% if carrito_items %}
+            {% for item in carrito_items %}
+            <div class="cart-item" data-id="{{ item.id }}">
+                <div class="item-image">
+                    {{ item.imagen }}
+                </div>
+                <div class="item-details">
+                    <h4>{{ item.nombre }}</h4>
+                    <p class="item-category">{{ item.categoria }}</p>
+                    <p class="item-price">${{ item.precio|floatformat:2 }} c/u</p>
+                </div>
+                <div class="item-controls">
+                    <div class="quantity-controls">
+                        <button class="quantity-btn minus" onclick="cambiarCantidad({{ item.id }}, -1)" {% if item.cantidad <= 1 %}disabled{% endif %}>-</button>
+                        <span class="quantity">{{ item.cantidad }}</span>
+                        <button class="quantity-btn plus" onclick="cambiarCantidad({{ item.id }}, 1)">+</button>
+                    </div>
+                    <div class="item-total">
+                        ${{ item.precio|mul:item.cantidad|floatformat:2 }}
+                    </div>
+                    <button class="remove-btn" onclick="eliminarProducto({{ item.id }})" title="Eliminar producto">
+                        🗑️
+                    </button>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+                            <div class="empty-cart" id="empty-cart">
+                                <div class="empty-cart-icon">🛒</div>
+                                <h3>Tu carrito está vacío</h3>
+                                <p>No has agregado ningún producto a tu carrito todavía</p>
+                                <a href="{% url 'inicio_usuario' %}" class="btn-primary">
+                                    🏪 Ir a la Tienda
+                                </a>
+                            </div>
+                            {% endif %}
+    </div>
+
+                    <!-- Acciones del carrito -->
+                    <div class="cart-actions" id="cart-actions" {% if not carrito_items %}style="display: none;"{% endif %}>
+                        <div class="actions-grid">
+                            <button class="action-btn secondary" onclick="vaciarCarrito()">
+                                🗑️ Vaciar Carrito
+                            </button>
+                            <button class="action-btn primary" onclick="seguirComprando()">
+                                🛍️ Seguir Comprando
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Resumen del pedido -->
+                <div class="order-summary">
+                    <div class="summary-card">
+                        <div class="summary-header">
+                            <h3>📋 Resumen del Pedido</h3>
+                            <div class="order-number">#{{ "now"|date:"YmdHis" }}</div>
+                        </div>
+                        
+                        <div class="summary-details">
+                            <div class="summary-row">
+                                <span>Subtotal</span>
+                                <span id="subtotal">${{ subtotal|floatformat:2 }}</span>
+                            </div>
+                            <div class="summary-row">
+                                <span>Costo de Envío</span>
+                                <span id="shipping">{% if envio == 0 %}GRATIS{% else %}${{ envio|floatformat:2 }}{% endif %}</span>
+                            </div>
+                            <div class="summary-row">
+                                <span>Descuento</span>
+                                <span id="discount" class="discount">- ${{ descuento|floatformat:2 }}</span>
+                            </div>
+                            <div class="summary-divider"></div>
+                            <div class="summary-row total">
+                                <span><strong>Total a Pagar</strong></span>
+                                <span id="total"><strong>${{ total|floatformat:2 }}</strong></span>
+                            </div>
+                        </div>
+
+                        <div class="checkout-section">
+                            <button class="checkout-btn" id="checkout-btn" {% if not carrito_items %}disabled{% endif %}>
+                                <span class="btn-icon">💳</span>
+                                Proceder al Pago
+                            </button>
+                            
+                            <div class="security-badge">
+                                <span class="security-icon">🔒</span>
+                                <span>Pago 100% seguro y encriptado</span>
+                            </div>
+                        </div>
+
+                        <div class="benefits">
+                            <div class="benefit-item">
+                                <span class="benefit-icon">🚚</span>
+                                <span>Envío rápido en 24-48h</span>
+                            </div>
+                            <div class="benefit-item">
+                                <span class="benefit-icon">↩️</span>
+                                <span>Devoluciones gratis en 30 días</span>
+                            </div>
+                            <div class="benefit-item">
+                                <span class="benefit-icon">📞</span>
+                                <span>Soporte 24/7</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Información de envío gratis -->
+                    <div class="shipping-info">
+        <div class="shipping-header">
+            <h4>🚚 Envío Gratis</h4>
+            <span class="free-shipping-badge">¡Ahorra $50!</span>
+        </div>
+        <p>En compras mayores a $500.00</p>
+        <div class="progress-container">
+            <div class="progress-bar">
+                <div class="progress" id="shipping-progress" style="width: {% widthratio subtotal 500 100 %}%"></div>
+            </div>
+            <div class="progress-labels">
+                <span>$0</span>
+                <span>$500</span>
+            </div>
+        </div>
+        <p class="progress-text" id="shipping-text">
+            {% if subtotal >= 500 %}
+                🎉 <strong>¡Felicidades! Tienes envío gratis</strong>
+            {% else %}
+                Agrega <strong>${{ 500|sub:subtotal|floatformat:2 }}</strong> más para envío gratis 🚚
+            {% endif %}
+        </p>
+    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer>
+            <div class="container">
+                <div class="footer-content">
+                    <div class="footer-section">
+                        <h4>Tienda de Abarrotes</h4>
+                        <p>Tu tienda de confianza para productos de calidad al mejor precio.</p>
+                    </div>
+                    <div class="footer-section">
+                        <h4>Contacto</h4>
+                        <p>📧 <a href="mailto:ejemplo@gmail.com">ejemplo@gmail.com</a></p>
+                        <p>📞 <a href="tel:+2222222222">(222)-222-2222</a></p>
+                    </div>
+                    <div class="footer-section">
+                        <h4>Horario</h4>
+                        <p>Lunes a Viernes: 8:00 - 20:00</p>
+                        <p>Sábados: 9:00 - 18:00</p>
+                        <p>Domingos: 10:00 - 16:00</p>
+                    </div>
+                </div>
+                <div class="footer-bottom">
+                    <p>&copy; 2025 Tienda de Abarrotes. Todos los derechos reservados.</p>
+                </div>
+            </div>
+        </footer>
+    </main>
+
+    <script>
+        // Función para obtener el token CSRF
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        // Cambiar cantidad de producto
+        function cambiarCantidad(productId, cambio) {
+            const itemElement = document.querySelector(`.cart-item[data-id="${productId}"]`);
+            const quantityElement = itemElement.querySelector('.quantity');
+            let cantidadActual = parseInt(quantityElement.textContent);
+            let nuevaCantidad = cantidadActual + cambio;
+
+            if (nuevaCantidad <= 0) {
+                eliminarProducto(productId);
+                return;
+            }
+
+            // Actualizar cantidad en el servidor
+            fetch("{% url 'actualizar_carrito' %}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: `producto_id=${productId}&cantidad=${nuevaCantidad}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Actualizar interfaz
+                    quantityElement.textContent = nuevaCantidad;
+                    
+                    // Actualizar total del item
+                    const precio = parseFloat(itemElement.querySelector('.item-price').textContent.replace('$', '').replace(' c/u', ''));
+                    itemElement.querySelector('.item-total').textContent = '$' + (precio * nuevaCantidad).toFixed(2);
+                    
+                    // Actualizar resumen
+                    actualizarResumen(data);
+                    
+                    // Actualizar controles de cantidad
+                    const minusBtn = itemElement.querySelector('.minus');
+                    minusBtn.disabled = nuevaCantidad <= 1;
+                } else {
+                    alert(data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error al actualizar cantidad');
+            });
+        }
+
+        // Eliminar producto
+        function eliminarProducto(productId) {
+            if (!confirm('¿Estás seguro de que quieres eliminar este producto del carrito?')) {
+                return;
+            }
+            
+            fetch("{% url 'eliminar_carrito' %}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: `producto_id=${productId}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Remover elemento del DOM
+                    const itemElement = document.querySelector(`.cart-item[data-id="${productId}"]`);
+                    itemElement.remove();
+                    
+                    // Actualizar interfaz
+                    actualizarInterfazCarrito(data);
+                } else {
+                    alert(data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error al eliminar producto');
+            });
+        }
+
+        // Vaciar carrito completo
+        function vaciarCarrito() {
+            if (!confirm('¿Estás seguro de que quieres vaciar todo el carrito?')) {
+                return;
+            }
+            
+            fetch("{% url 'vaciar_carrito' %}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': getCookie('csrftoken')
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    actualizarInterfazCarrito(data);
+                } else {
+                    alert(data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error al vaciar carrito');
+            });
+        }
+
+        // Actualizar interfaz del carrito
+        function actualizarInterfazCarrito(data) {
+            const cartItems = document.getElementById('cart-items');
+            const emptyCart = document.getElementById('empty-cart');
+            const itemsCount = document.getElementById('items-count');
+            const cartBadge = document.getElementById('sidebar-cart-badge');
+            const checkoutBtn = document.getElementById('checkout-btn');
+            const cartActions = document.getElementById('cart-actions');
+
+            if (data.total_items === 0) {
+                // Mostrar carrito vacío
+                cartItems.innerHTML = `
+                    <div class="empty-cart" id="empty-cart">
+                        <div class="empty-cart-icon">🛒</div>
+                        <h3>Tu carrito está vacío</h3>
+                        <p>No has agregado ningún producto a tu carrito todavía</p>
+                        <a href="{% url 'inicio_usuario' %}" class="btn-primary">
+                            🏪 Ir a la Tienda
+                        </a>
+                    </div>
+                `;
+                itemsCount.textContent = '0 productos';
+                cartBadge.textContent = '';
+                checkoutBtn.disabled = true;
+                checkoutBtn.innerHTML = '<span class="btn-icon">💳</span> Carrito Vacío';
+                cartActions.style.display = 'none';
+            } else {
+                itemsCount.textContent = data.total_items + ' producto' + (data.total_items !== 1 ? 's' : '');
+                cartBadge.textContent = data.total_items > 9 ? '9+' : data.total_items;
+                checkoutBtn.disabled = false;
+                checkoutBtn.innerHTML = '<span class="btn-icon">💳</span> Proceder al Pago';
+                cartActions.style.display = 'block';
+            }
+
+            actualizarResumen(data);
+        }
+
+        // Actualizar resumen
+        function actualizarResumen(data) {
+            document.getElementById('subtotal').textContent = '$' + data.subtotal.toFixed(2);
+            document.getElementById('shipping').textContent = data.envio === 0 ? 'GRATIS' : '$' + data.envio.toFixed(2);
+            document.getElementById('discount').textContent = '-$' + data.descuento.toFixed(2);
+            document.getElementById('total').textContent = '$' + data.total.toFixed(2);
+
+            // Actualizar barra de progreso para envío gratis
+            const progressBar = document.getElementById('shipping-progress');
+            const progressText = document.getElementById('shipping-text');
+            
+            if (data.subtotal >= 500) {
+                progressBar.style.width = '100%';
+                progressBar.style.background = 'var(--success)';
+                progressText.innerHTML = '🎉 <strong>¡Felicidades! Tienes envío gratis</strong>';
+                progressText.style.color = 'var(--success)';
+            } else {
+                const progreso = Math.min((data.subtotal / 500) * 100, 100);
+                progressBar.style.width = progreso + '%';
+                progressBar.style.background = 'var(--accent)';
+                const faltante = 500 - data.subtotal;
+                progressText.innerHTML = `Agrega <strong>$${faltante.toFixed(2)}</strong> más para envío gratis 🚚`;
+                progressText.style.color = 'var(--white)';
+            }
+        }
+
+        // Seguir comprando
+        function seguirComprando() {
+            window.location.href = "{% url 'inicio_usuario' %}";
+        }
+
+        // Buscar productos
+        function buscarProductos() {
+            const searchTerm = document.getElementById('search-input').value.trim();
+            if (searchTerm) {
+                window.location.href = `{% url 'inicio_usuario' %}?search=${encodeURIComponent(searchTerm)}`;
+            }
+        }
+
+        // Proceder al pago
+        document.getElementById('checkout-btn').addEventListener('click', function() {
+            const carrito = {{ total_items }};
+            if (carrito === 0) return;
+            
+            this.innerHTML = '<span class="btn-icon">⏳</span> Procesando...';
+            this.disabled = true;
+            
+            setTimeout(() => {
+                const total = document.getElementById('total').textContent;
+                alert(`🎊 ¡Pedido realizado con éxito!\n\nTotal: ${total}\n\nTu pedido llegará en 24-48 horas.`);
+                
+                // Vaciar carrito después del pedido
+                vaciarCarrito();
+            }, 2000);
+        });
+
+        // Enter en búsqueda
+        document.getElementById('search-input').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                buscarProductos();
+            }
+        });
+    </script>
+</body>
+</html>

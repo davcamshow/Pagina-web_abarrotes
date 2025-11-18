@@ -1,10 +1,11 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sobre nosotros - Tienda de Abarrotes</title>
-    <link rel="stylesheet" href="../Css/SobreNosotros.css">
+    <link rel="stylesheet" href="{% static 'Css/SobreNosotros.css' %}">
 </head>
 <body>
     <!-- Menú lateral -->
@@ -16,33 +17,15 @@
         
         <ul class="sidebar-menu">
             <li class="menu-item">
-                <a href="../Html/Inicio.html" class="menu-link">
+                <a href="{% url 'home' %}" class="menu-link">
                     <span class="menu-icon">🏠</span>
                     Inicio
                 </a>
             </li>
             <li class="menu-item">
-                <a href="productos.html" class="menu-link">
-                    <span class="menu-icon">🛒</span>
-                    Productos
-                </a>
-            </li>
-            <li class="menu-item">
-                <a href="../Html/SobreNosotros.html" class="menu-link active">
+                <a href="{% url 'sobre_nosotros' %}" class="menu-link active">
                     <span class="menu-icon">👥</span>
                     Sobre Nosotros
-                </a>
-            </li>
-            <li class="menu-item">
-                <a href="../html/login.html" class="menu-link">
-                    <span class="menu-icon">👤</span>
-                    Iniciar Sesión
-                </a>
-            </li>
-            <li class="menu-item">
-                <a href="../html/registro.html" class="menu-link">
-                    <span class="menu-icon">📝</span>
-                    Registrarse
                 </a>
             </li>
         </ul>

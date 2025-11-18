@@ -1,0 +1,97 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inicio - Tienda de Abarrotes</title>
+    <link rel="stylesheet" href="{% static 'Css/Inicio.css' %}">
+</head>
+<body>
+    <nav class="sidebar">
+        <div class="sidebar-header">
+            <h2>Tienda de Abarrotes</h2>
+            <p>Menú de Navegación</p>
+        </div>
+        
+        <ul class="sidebar-menu">
+            <li class="menu-item">
+                <a href="{% url 'home' %}" class="menu-link active">
+                    <span class="menu-icon">🏠</span>
+                    Inicio
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="{% url 'sobre_nosotros' %}" class="menu-link">
+                    <span class="menu-icon">👥</span>
+                    Sobre Nosotros
+                </a>
+            </li>
+        </ul>
+        
+        <div class="sidebar-footer">
+            <p>&copy; 2025 Tienda de Abarrotes</p>
+        </div>
+    </nav>
+
+    <!-- Contenido principal -->
+    <main class="main-content">
+        <div class="auth-buttons">
+            <a href="{% url 'login' %}" class="btn btn-login">Iniciar Sesión</a>
+            <a href="{% url 'registro' %}" class="btn btn-register">Registrarse</a>
+        </div>
+        
+        <header class="hero">
+            <div class="container">
+                <h1>Bienvenido a tu Abarrotes en Línea</h1>
+                <p>Todo lo que necesitas para tu hogar, a un clic de distancia</p>
+            </div>
+        </header>
+
+        <div class="container">
+            <section>
+                <h2>¿Por qué elegirnos?</h2>
+                <h4>
+                    En nuestra tienda de abarrotes en línea, nos dedicamos a hacer tu vida más fácil. 
+                    Ofrecemos una amplia variedad de productos de calidad, precios competitivos y 
+                    entregas rápidas para que puedas disfrutar de más tiempo con tu familia.
+                </h4>
+            </section>
+
+            <div class="features">
+                <div class="feature-card">
+                    <div class="feature-icon">🚚</div>
+                    <h3>Envío Rápido</h3>
+                    <p>Recibe tus productos en la puerta de tu casa en menos de 24 horas</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">💰</div>
+                    <h3>Precios Competitivos</h3>
+                    <p>Ofrecemos los mejores precios del mercado sin comprometer la calidad</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🛡️</div>
+                    <h3>Calidad Garantizada</h3>
+                    <p>Todos nuestros productos pasan por rigurosos controles de calidad</p>
+                </div>
+            </div>
+
+            <section>
+                <h2>Nuestros Productos</h2>
+                <h4>
+                    Encuentra todo lo que necesitas para tu hogar en un solo lugar. Desde alimentos 
+                    básicos hasta productos de limpieza y cuidado personal, tenemos una amplia 
+                    selección para satisfacer todas tus necesidades.
+                </h4>
+            </section>
+        </div>
+
+        <footer>
+            <div class="container">
+                <p>&copy; 2025 Tienda de Abarrotes. Todos los derechos reservados.</p>
+                <p>Contacto: <a href="mailto:ejemplo@gmail.com">ejemplo@gmail.com</a> | Teléfono: <a href="tel:+2222222222">(222)-222-2222</a></p>
+            </div>
+        </footer>
+    </main>
+</body>
+</html>
