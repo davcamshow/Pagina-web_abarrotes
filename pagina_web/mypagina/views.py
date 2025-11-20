@@ -9,6 +9,7 @@ import json
 from .forms import RegistroForm, LoginForm
 from .models import Usuario, Categoria, Producto
 from django.contrib.admin.views.decorators import staff_member_required
+from django.contrib.auth.decorators import user_passes_test
 
 def home(request):
     return render(request, 'inicio.html')
@@ -67,8 +68,8 @@ def login(request):
                     auth_login(request, usuario)
                     messages.success(request, f'¡Bienvenido {usuario.nombre}!')
                     
-                    # NUEVA LÓGICA: Redirigir según el tipo de usuario
-                    if usuario.is_admin:
+                    # CORREGIDO: Usar is_staff en lugar de is_admin
+                    if usuario.is_staff:
                         return redirect('inicio_admin')
                     else:
                         return redirect('inicio_usuario')
@@ -282,15 +283,13 @@ def obtener_carrito(request):
             'message': f'Error al obtener carrito: {str(e)}'
         })
     
-# views.py - Modificar los decoradores
-from django.contrib.auth.decorators import user_passes_test
-
+# CORREGIDO: Decorador admin_required usando is_staff
 def admin_required(function=None):
     """
     Decorador que verifica si el usuario es administrador
     """
     actual_decorator = user_passes_test(
-        lambda u: u.is_authenticated and u.is_admin,
+        lambda u: u.is_authenticated and u.is_staff,  # CORREGIDO: usar is_staff
         login_url='/login/',
         redirect_field_name=None
     )
@@ -340,16 +339,16 @@ def inventario(request):
     
     return render(request, 'inventario.html', context)
 
-# views.py - Modifica la vista administrar_usuarios
+# CORREGIDO: Vista administrar_usuarios usando is_staff
 @staff_member_required
 def administrar_usuarios(request):
     """Vista para administrar usuarios"""
     usuarios = Usuario.objects.all()
     
-    # Estadísticas
+    # Estadísticas - CORREGIDO: usar is_staff en lugar de is_admin
     total_usuarios = usuarios.count()
     usuarios_activos = usuarios.filter(is_active=True).count()
-    administradores = usuarios.filter(is_admin=True).count()
+    administradores = usuarios.filter(is_staff=True).count()  # CORREGIDO
     
     context = {
         'usuario': request.user,
@@ -361,7 +360,7 @@ def administrar_usuarios(request):
     
     return render(request, 'administrar_usuarios.html', context)
 
-# Agrega estas nuevas vistas para las acciones
+# CORREGIDO: Funciones para usuarios usando is_staff
 @staff_member_required
 @require_POST
 def crear_usuario(request):
@@ -384,11 +383,11 @@ def crear_usuario(request):
                 'message': 'Este email ya está registrado'
             })
         
+        # CORREGIDO: Usar solo is_staff
         usuario = Usuario(
             nombre=nombre,
             email=email,
-            is_admin=es_admin,
-            is_staff=es_admin
+            is_staff=es_admin  # CORREGIDO
         )
         usuario.set_password(password)
         usuario.save()
@@ -425,8 +424,7 @@ def editar_usuario(request):
         
         usuario.nombre = nombre
         usuario.email = email
-        usuario.is_admin = es_admin
-        usuario.is_staff = es_admin
+        usuario.is_staff = es_admin  # CORREGIDO
         usuario.save()
         
         return JsonResponse({
@@ -495,4 +493,151 @@ def eliminar_usuario(request):
         return JsonResponse({
             'success': False,
             'message': f'Error al eliminar usuario: {str(e)}'
+        })
+
+# Funciones para productos
+@staff_member_required
+@require_POST
+def crear_producto(request):
+    """Crear nuevo producto desde el panel admin"""
+    try:
+        nombre = request.POST.get('nombre')
+        descripcion = request.POST.get('descripcion')
+        precio = request.POST.get('precio')
+        stock = request.POST.get('stock')
+        categoria_id = request.POST.get('categoria_id')
+        destacado = request.POST.get('destacado') == 'true'
+        descuento = request.POST.get('descuento', 0)
+        
+        print(f"Datos recibidos: {nombre}, {precio}, {stock}, {categoria_id}")
+        
+        if not all([nombre, precio, stock, categoria_id]):
+            return JsonResponse({
+                'success': False,
+                'message': 'Todos los campos obligatorios deben ser llenados'
+            })
+        
+        categoria = get_object_or_404(Categoria, id=categoria_id)
+        
+        producto = Producto(
+            nombre=nombre,
+            description=descripcion,
+            precio=float(precio),
+            stock=int(stock),
+            categoria=categoria,
+            destacado=destacado,
+            descuento=int(descuento)
+        )
+        producto.save()
+        
+        return JsonResponse({
+            'success': True,
+            'message': f'Producto "{nombre}" creado exitosamente',
+            'producto_id': producto.id_producto
+        })
+        
+    except Exception as e:
+        print(f"Error en crear_producto: {str(e)}")
+        return JsonResponse({
+            'success': False,
+            'message': f'Error al crear producto: {str(e)}'
+        })
+
+@staff_member_required
+@require_POST
+def editar_producto(request):
+    """Editar producto existente"""
+    try:
+        producto_id = request.POST.get('producto_id')
+        nombre = request.POST.get('nombre')
+        descripcion = request.POST.get('descripcion')
+        precio = request.POST.get('precio')
+        stock = request.POST.get('stock')
+        categoria_id = request.POST.get('categoria_id')
+        destacado = request.POST.get('destacado') == 'true'
+        descuento = request.POST.get('descuento', 0)
+        
+        producto = get_object_or_404(Producto, id_producto=producto_id)
+        categoria = get_object_or_404(Categoria, id=categoria_id)
+        
+        producto.nombre = nombre
+        producto.description = descripcion
+        producto.precio = float(precio)
+        producto.stock = int(stock)
+        producto.categoria = categoria
+        producto.destacado = destacado
+        producto.descuento = int(descuento)
+        producto.save()
+        
+        return JsonResponse({
+            'success': True,
+            'message': f'Producto "{nombre}" actualizado exitosamente'
+        })
+        
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': f'Error al editar producto: {str(e)}'
+        })
+
+@staff_member_required
+@require_POST
+def eliminar_producto(request):
+    """Eliminar producto permanentemente"""
+    try:
+        producto_id = request.POST.get('producto_id')
+        producto = get_object_or_404(Producto, id_producto=producto_id)
+        
+        nombre_producto = producto.nombre
+        producto.delete()
+        
+        return JsonResponse({
+            'success': True,
+            'message': f'Producto "{nombre_producto}" eliminado permanentemente'
+        })
+        
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': f'Error al eliminar producto: {str(e)}'
+        })
+
+@staff_member_required
+def obtener_productos_por_categoria(request):
+    """Obtener productos filtrados por categoría"""
+    try:
+        categoria_id = request.GET.get('categoria_id')
+        
+        if categoria_id and categoria_id != '':
+            productos = Producto.objects.filter(
+                categoria_id=categoria_id, 
+                activo=True
+            ).select_related('categoria')
+        else:
+            productos = Producto.objects.filter(activo=True).select_related('categoria')
+        
+        productos_data = []
+        for producto in productos:
+            productos_data.append({
+                'id_producto': producto.id_producto,
+                'nombre': producto.nombre,
+                'precio': float(producto.precio),
+                'stock': producto.stock,
+                'categoria': producto.categoria.nombre,
+                'categoria_id': producto.categoria.id,
+                'destacado': producto.destacado,
+                'descuento': producto.descuento,
+                'descripcion': producto.description or ''
+            })
+        
+        return JsonResponse({
+            'success': True,
+            'productos': productos_data
+        })
+        
+    except Exception as e:
+        print(f"Error en obtener_productos_por_categoria: {str(e)}")
+        return JsonResponse({
+            'success': False,
+            'message': f'Error al obtener productos: {str(e)}'
         })

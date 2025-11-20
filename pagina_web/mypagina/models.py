@@ -17,30 +17,19 @@ class UsuarioManager(BaseUserManager):
         usuario.save(using=self._db)
         return usuario
 
-# models.py - Modificar la clase Usuario
+    def create_superuser(self, email, nombre, password=None):
+        """Crear superusuario (admin)"""
+        usuario = self.create_user(
+            email=email,
+            nombre=nombre,
+            password=password,
+        )
+        usuario.is_admin = True
+        usuario.is_staff = True
+        usuario.save(using=self._db)
+        return usuario
+
 class Usuario(AbstractBaseUser):
-    def activar(self):
-        """Activar usuario"""
-        self.is_active = True
-        self.save()
-    
-    def desactivar(self):
-        """Desactivar usuario"""
-        self.is_active = False
-        self.save()
-    
-    def convertir_en_admin(self):
-        """Convertir usuario en administrador"""
-        self.is_admin = True
-        self.is_staff = True
-        self.save()
-    
-    def remover_admin(self):
-        """Remover permisos de administrador"""
-        self.is_admin = False
-        self.is_staff = False
-        self.save()
-        
     id = models.AutoField(primary_key=True)
     nombre = models.CharField(max_length=100)
     email = models.EmailField(unique=True, max_length=254)
@@ -49,9 +38,8 @@ class Usuario(AbstractBaseUser):
     is_active = models.BooleanField(default=True)
     carrito = models.TextField(default='[]')
     
-    # NUEVO CAMPO: identificar administradores
+    # CORREGIDO: Solo un campo is_staff, no ambos
     is_staff = models.BooleanField(default=False)
-    is_admin = models.BooleanField(default=False)
     
     objects = UsuarioManager()
     
@@ -72,17 +60,37 @@ class Usuario(AbstractBaseUser):
         return check_password(raw_password, self.password)
 
     def has_perm(self, perm, obj=None):
-        # Los administradores tienen todos los permisos
-        return self.is_admin
+        # Los staff tienen todos los permisos
+        return self.is_staff
 
     def has_module_perms(self, app_label):
-        # Los administradores tienen acceso a todos los módulos
-        return self.is_admin
+        # Los staff tienen acceso a todos los módulos
+        return self.is_staff
 
-    # MODIFICAR esta propiedad
+    # CORREGIDO: Propiedades para compatibilidad
     @property
-    def is_staff(self):
-        return self.is_admin
+    def is_admin(self):
+        return self.is_staff
+    
+    def activar(self):
+        """Activar usuario"""
+        self.is_active = True
+        self.save()
+    
+    def desactivar(self):
+        """Desactivar usuario"""
+        self.is_active = False
+        self.save()
+    
+    def convertir_en_admin(self):
+        """Convertir usuario en administrador"""
+        self.is_staff = True
+        self.save()
+    
+    def remover_admin(self):
+        """Remover permisos de administrador"""
+        self.is_staff = False
+        self.save()
     
     def obtener_carrito(self):
         """Obtiene el carrito del usuario como lista"""
