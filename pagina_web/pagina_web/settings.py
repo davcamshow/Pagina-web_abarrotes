@@ -59,11 +59,11 @@ WSGI_APPLICATION = 'pagina_web.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'abarrotes_bd',  # El nombre de tu BD en phpMyAdmin
-        'USER': 'root',           # Usualmente 'root' en XAMPP
-        'PASSWORD': '',    # La contraseña de MySQL
-        'HOST': 'localhost',                  # O la IP de tu servidor
-        'PORT': '3306',                       # Puerto por defecto de MySQL
+        'NAME': 'abarrotes_bd',
+        'USER': 'root',
+        'PASSWORD': 'root',    # <--- AQUÍ PON 'root'
+        'HOST': 'localhost',
+        'PORT': '3306',
         'OPTIONS': {
             'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
             'charset': 'utf8mb4',
