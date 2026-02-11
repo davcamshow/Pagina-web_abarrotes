@@ -44,7 +44,6 @@ def registro(request):
     
     return render(request, 'Registro.html', {'form': form})
 
-# views.py - Modificar la función login
 def login(request):
     if request.method == 'POST':
         if request.headers.get('x-requested-with') == 'XMLHttpRequest':
@@ -68,7 +67,6 @@ def login(request):
                     auth_login(request, usuario)
                     messages.success(request, f'¡Bienvenido {usuario.nombre}!')
                     
-                    # CORREGIDO: Usar is_staff en lugar de is_admin
                     if usuario.is_staff:
                         return redirect('inicio_admin')
                     else:
@@ -148,7 +146,7 @@ def agregar_al_carrito(request):
         producto_id = int(request.POST.get('producto_id'))
         cantidad = int(request.POST.get('cantidad', 1))
         
-        producto = get_object_or_404(Producto, id_producto=producto_id)
+        producto = get_object_or_404(Producto, id=producto_id)
         
         # Verificar stock
         if producto.stock < cantidad:
@@ -283,13 +281,12 @@ def obtener_carrito(request):
             'message': f'Error al obtener carrito: {str(e)}'
         })
     
-# CORREGIDO: Decorador admin_required usando is_staff
 def admin_required(function=None):
     """
     Decorador que verifica si el usuario es administrador
     """
     actual_decorator = user_passes_test(
-        lambda u: u.is_authenticated and u.is_staff,  # CORREGIDO: usar is_staff
+        lambda u: u.is_authenticated and u.is_staff,
         login_url='/login/',
         redirect_field_name=None
     )
@@ -297,7 +294,6 @@ def admin_required(function=None):
         return actual_decorator(function)
     return actual_decorator
 
-# Modificar las vistas administrativas
 @admin_required
 def inicio_admin(request):
     """Vista para el panel de administración"""
@@ -339,16 +335,15 @@ def inventario(request):
     
     return render(request, 'inventario.html', context)
 
-# CORREGIDO: Vista administrar_usuarios usando is_staff
 @staff_member_required
 def administrar_usuarios(request):
     """Vista para administrar usuarios"""
     usuarios = Usuario.objects.all()
     
-    # Estadísticas - CORREGIDO: usar is_staff en lugar de is_admin
+    # Estadísticas
     total_usuarios = usuarios.count()
     usuarios_activos = usuarios.filter(is_active=True).count()
-    administradores = usuarios.filter(is_staff=True).count()  # CORREGIDO
+    administradores = usuarios.filter(is_staff=True).count()
     
     context = {
         'usuario': request.user,
@@ -360,7 +355,6 @@ def administrar_usuarios(request):
     
     return render(request, 'administrar_usuarios.html', context)
 
-# CORREGIDO: Funciones para usuarios usando is_staff
 @staff_member_required
 @require_POST
 def crear_usuario(request):
@@ -383,11 +377,11 @@ def crear_usuario(request):
                 'message': 'Este email ya está registrado'
             })
         
-        # CORREGIDO: Usar solo is_staff
         usuario = Usuario(
             nombre=nombre,
             email=email,
-            is_staff=es_admin  # CORREGIDO
+            is_staff=es_admin,
+            is_admin=es_admin
         )
         usuario.set_password(password)
         usuario.save()
@@ -424,7 +418,8 @@ def editar_usuario(request):
         
         usuario.nombre = nombre
         usuario.email = email
-        usuario.is_staff = es_admin  # CORREGIDO
+        usuario.is_staff = es_admin
+        usuario.is_admin = es_admin
         usuario.save()
         
         return JsonResponse({
@@ -521,7 +516,7 @@ def crear_producto(request):
         
         producto = Producto(
             nombre=nombre,
-            description=descripcion,
+            descripcion=descripcion,
             precio=float(precio),
             stock=int(stock),
             categoria=categoria,
@@ -533,7 +528,7 @@ def crear_producto(request):
         return JsonResponse({
             'success': True,
             'message': f'Producto "{nombre}" creado exitosamente',
-            'producto_id': producto.id_producto
+            'producto_id': producto.id
         })
         
     except Exception as e:
@@ -557,11 +552,11 @@ def editar_producto(request):
         destacado = request.POST.get('destacado') == 'true'
         descuento = request.POST.get('descuento', 0)
         
-        producto = get_object_or_404(Producto, id_producto=producto_id)
+        producto = get_object_or_404(Producto, id=producto_id)
         categoria = get_object_or_404(Categoria, id=categoria_id)
         
         producto.nombre = nombre
-        producto.description = descripcion
+        producto.descripcion = descripcion
         producto.precio = float(precio)
         producto.stock = int(stock)
         producto.categoria = categoria
@@ -586,7 +581,7 @@ def eliminar_producto(request):
     """Eliminar producto permanentemente"""
     try:
         producto_id = request.POST.get('producto_id')
-        producto = get_object_or_404(Producto, id_producto=producto_id)
+        producto = get_object_or_404(Producto, id=producto_id)
         
         nombre_producto = producto.nombre
         producto.delete()
@@ -619,7 +614,7 @@ def obtener_productos_por_categoria(request):
         productos_data = []
         for producto in productos:
             productos_data.append({
-                'id_producto': producto.id_producto,
+                'id_producto': producto.id,
                 'nombre': producto.nombre,
                 'precio': float(producto.precio),
                 'stock': producto.stock,
@@ -627,7 +622,7 @@ def obtener_productos_por_categoria(request):
                 'categoria_id': producto.categoria.id,
                 'destacado': producto.destacado,
                 'descuento': producto.descuento,
-                'descripcion': producto.description or ''
+                'descripcion': producto.descripcion or ''
             })
         
         return JsonResponse({

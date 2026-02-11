@@ -58,16 +58,12 @@ WSGI_APPLICATION = 'pagina_web.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'abarrotes_bd',
-        'USER': 'root',
-        'PASSWORD': 'root',    # <--- AQUÍ PON 'root'
-        'HOST': 'localhost',
-        'PORT': '3306',
-        'OPTIONS': {
-            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
-            'charset': 'utf8mb4',
-        }
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'postgres', 
+        'USER': 'postgres.yxerbrzojxpbmhnuucks', 
+        'PASSWORD': 'Invierno_2018',
+        'HOST': 'aws-0-us-west-2.pooler.supabase.com', 
+        'PORT': '5432',
     }
 }
 

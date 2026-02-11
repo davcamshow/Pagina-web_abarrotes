@@ -24,7 +24,6 @@ class UsuarioManager(BaseUserManager):
             nombre=nombre,
             password=password,
         )
-        usuario.is_admin = True
         usuario.is_staff = True
         usuario.save(using=self._db)
         return usuario
@@ -38,8 +37,9 @@ class Usuario(AbstractBaseUser):
     is_active = models.BooleanField(default=True)
     carrito = models.TextField(default='[]')
     
-    # CORREGIDO: Solo un campo is_staff, no ambos
-    is_staff = models.BooleanField(default=False)
+    # Campos para mapear a la base de datos
+    is_admin_field = models.IntegerField(default=0, db_column='is_admin')
+    is_staff_field = models.IntegerField(default=0, db_column='is_staff')
     
     objects = UsuarioManager()
     
@@ -67,10 +67,22 @@ class Usuario(AbstractBaseUser):
         # Los staff tienen acceso a todos los módulos
         return self.is_staff
 
-    # CORREGIDO: Propiedades para compatibilidad
+    # Propiedades para compatibilidad
+    @property
+    def is_staff(self):
+        return bool(self.is_staff_field)
+    
+    @is_staff.setter
+    def is_staff(self, value):
+        self.is_staff_field = 1 if value else 0
+    
     @property
     def is_admin(self):
-        return self.is_staff
+        return bool(self.is_admin_field)
+    
+    @is_admin.setter
+    def is_admin(self, value):
+        self.is_admin_field = 1 if value else 0
     
     def activar(self):
         """Activar usuario"""
@@ -85,11 +97,13 @@ class Usuario(AbstractBaseUser):
     def convertir_en_admin(self):
         """Convertir usuario en administrador"""
         self.is_staff = True
+        self.is_admin = True
         self.save()
     
     def remover_admin(self):
         """Remover permisos de administrador"""
         self.is_staff = False
+        self.is_admin = False
         self.save()
     
     def obtener_carrito(self):
@@ -168,9 +182,13 @@ class Categoria(models.Model):
         return self.nombre
 
 class Producto(models.Model):
-    id_producto = models.AutoField(primary_key=True)
+    # Cambiado de id_producto a id para coincidir con la base de datos
+    id = models.AutoField(primary_key=True)
     nombre = models.CharField(max_length=255)
-    description = models.TextField(blank=True, null=True)
+    # IMPORTANTE: En la base de datos la columna se llama "description" (con "r" extra)
+    # Pero según tu base de datos SQL dice "descripcion" (sin "r")
+    # Vamos a usar db_column para especificar el nombre correcto
+    descripcion = models.TextField(blank=True, null=True, db_column='description')
     precio = models.DecimalField(max_digits=10, decimal_places=2)
     precio_original = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
     imagen = models.CharField(max_length=255, blank=True, null=True)
@@ -179,7 +197,7 @@ class Producto(models.Model):
     stock = models.IntegerField(default=0)
     activo = models.BooleanField(default=True)
     fecha_creacion = models.DateTimeField(auto_now_add=True)
-    categoria = models.ForeignKey(Categoria, on_delete=models.CASCADE, db_column='id')
+    categoria = models.ForeignKey(Categoria, on_delete=models.CASCADE, db_column='categoria_id')
     
     class Meta:
         db_table = 'productos'
@@ -195,11 +213,14 @@ class Producto(models.Model):
     @property
     def precio_con_descuento(self):
         if self.tiene_descuento:
-            return self.precio * (1 - self.descuento / 100)
-        return self.precio
+            return float(self.precio) * (1 - self.descuento / 100)
+        return float(self.precio)
 
     def obtener_imagen_emoji(self):
         """Obtiene un emoji representativo para el producto"""
+        if not self.categoria:
+            return "📦"
+            
         nombre_categoria = self.categoria.nombre.lower()
         if "fruta" in nombre_categoria:
             return "🍎"
